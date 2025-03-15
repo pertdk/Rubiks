@@ -20,7 +20,7 @@
         <junit-jupiter-api.version>5.10.2</junit-jupiter-api.version>
         <junit-jupiter-engine.version>5.10.2</junit-jupiter-engine.version>
         <maven-failsafe-plugin.version>3.2.5</maven-failsafe-plugin.version>
-        <annotations.version>24.1.0</annotations.version>
+        <annotations.version>26.0.2</annotations.version>
         <log4j12-api.version>2.0-alpha2</log4j12-api.version>
         <mockito-core.version>5.11.0</mockito-core.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
