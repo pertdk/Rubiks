@@ -106,3 +106,148 @@ So there are exactly
 
 Giving a total of 26 pieces and 54 surfaces.
 
+### Serializing the Rubik's Cube
+I want to represent as many variations of a Rubik's Cube as possible, in as little space as possible.
+There are only 6 colors, which means each color can be represented by 3 bits.
+The colors are defined as:
+
+- White 0 (000b) 
+- Yellow 1 (001b) 
+- Orange 2 (010b) 
+- Red 3 (011b) 
+- Green 4 (100b)
+- Blue 5 (101b) 
+
+
+There's no piece in the absolute center of the Rubik's Cube, and center pieces are fixed, so these will not be represented in the serialized model.
+Since there af 54 surfaces, but 6 of them are center pieces, we are left with 48 surfaces to represent.
+48 * 3 bits = 144 bits in total.
+
+Each corner piece is represented by 9 bits, and each edge piece is represented by 6 bits.
+The surfaces are considered in the following order: left (-x), right (+x), down (-y), up (+y), front (-z), back (+z).
+The serialization is then done in layers from top to bottom.
+With this in mind, the serialization of a Rubik's Cube is as follows:
+
+#### Top Layer
+The top layer contains the blue center piece at fixed position
+
+| Bit position | Description      | Facing | Coordinate  | Initial color |
+|:------------:|:-----------------|:------:|:-----------:|:--------------|
+|   000-002    | Left,Top,Back    |  Left  | (-1, 1, 1)  | Orange (010b) |
+|   003-005    | Left,Top,Back    |   Up   | (-1, 1, 1)  | Blue (101b)   |
+|   006-008    | Left,Top,Back    |  Back  | (-1, 1, 1)  | Yellow (001b) |
+|   009-011    | Middle,Top,Back  |   Up   | ( 0, 1, 1)  | Blue (101b)   |
+|   012-014    | Middle,Top,Back  |  Back  | ( 0, 1, 1)  | Yellow (001b) |
+|   015-017    | Right,Top,Back   | Right  | ( 1, 1, 1)  | Red (011b)    |
+|   018-020    | Right,Top,Back   |   Up   | ( 1, 1, 1)  | Blue (101b)   |
+|   021-023    | Right,Top,Back   |  Back  | ( 1, 1, 1)  | Yellow (001b) |
+|   024-026    | Left,Top,Middle  |  Left  | (-1, 1, 0)  | Orange (010b) |
+|   027-029    | Left,Top,Middle  |   Up   | (-1, 1, 0)  | Blue (101b)   | 
+|   030-032    | Right,Top,Middle | Right  | ( 1, 1, 0)  | Red (011b)    |
+|   033-035    | Right,Top,Middle |   Up   | ( 1, 1, 0)  | Blue (101b)   |
+|   036-038    | Left,Top,Front   |  Left  | (-1, 1, -1) | Orange (010b) |
+|   039-041    | Left,Top,Front   |   Up   | (-1, 1, -1) | Blue (101b)   |
+|   042-044    | Left,Top,Front   | Front  | (-1, 1, -1) | White (000b)  |
+|   045-047    | Middle,Top,Front |   Up   | ( 0, 1, -1) | Blue (101b)   |
+|   048-050    | Middle,Top,Front | Front  | ( 0, 1, -1) | White (000b)  |
+|   051-053    | Right,Top,Front  | Right  | ( 1, 1, -1) | Red (011b)    |
+|   054-056    | Right,Top,Front  |   Up   | ( 1, 1, -1) | Blue (101b)   |
+|   057-059    | Right,Top,Front  | Front  | ( 1, 1, -1) | White (000b)  |
+
+The initial bitstring for the top layer is:
+```010101001101001011101001010101011101010101000101000011101000```
+
+#### Middle Layer
+The middle layer contains orange, red, white and yellow center pieces at fixed positions
+
+| Bit position | Description        | Facing | Coordinate  | Initial color |
+|:------------:|:-------------------|:------:|:-----------:|:--------------|
+|   060-062    | Left,Middle,Back   |  Left  | (-1, 0, 1)  | Orange (010b) |
+|   063-065    | Left,Middle,Back   |  Back  | (-1, 0, 1)  | Yellow (001b) |
+|   066-068    | Right,Middle,Back  | Right  | ( 1, 0, 1)  | Red (011b)    |
+|   069-071    | Right,Middle,Back  |  Back  | ( 1, 0, 1)  | Yellow (001b) |
+|   072-074    | Left,Middle,Front  |  Left  | (-1, 0, -1) | Orange (010b) |
+|   075-077    | Left,Middle,Front  | Front  | (-1, 0, -1) | White (000b)  |
+|   078-080    | Right,Middle,Front | Right  | ( 1, 0, -1) | Red (011b)    |
+|   081-083    | Right,Middle,Front | Front  | ( 1, 0, -1) | White (000b)  |
+
+The initial bitstring for the middle layer is:
+```010001011001010000011000```
+
+#### The Bottom Layer
+The bottom layer contains the green center piece at a fixed position
+
+| Bit position | Description        | Facing |  Coordinate  | Initial color    |
+|:------------:|:-------------------|:------:|:------------:|:-----------------|
+|   084-086    | Left,Bottom,Back   |  Left  | (-1, -1, 1)  | Orange (010b)    |
+|   087-089    | Left,Bottom,Back   |  Down  | (-1, -1, 1)  | Green (100b)     |
+|   090-092    | Left,Bottom,Back   |  Back  | (-1, -1, 1)  | Yellow (001b)    |
+|   093-095    | Middle,Bottom,Back |  Down  | ( 0, -1, 1)  | Green (100b)     |
+|   096-098    | Middle,Bottom,Back |  Back  | ( 0, -1, 1)  | Yellow (001b)    |
+|   099-101    | Right,Bottom,Back  | Right  | ( 1, -1, 1)  | Red (011b)       |
+|   102-104    | Right,Bottom,Back  |  Down  | ( 1, -1, 1)  | Green (100b)     |
+|   105-107    | Right,Bottom,Back  |  Back  | ( 1, -1, 1)  | Yellow (001b)    |
+|   108-110    | Left,Bottom,Middle |  Left  | (-1, -1, 0)  | Orange (010b)    |
+|   111-113    | Left,Bottom,Middle |  Down  | (-1, -1, 0)  | Green (100b)     |
+|   114-116    | Right,Bottom,Middle| Right  | ( 1, -1, 0)  | Red (011b)       |
+|   117-119    | Right,Bottom,Middle|  Down  | ( 1, -1, 0)  | Green (100b)     |
+|   120-122    | Left,Bottom,Front  |  Left  | (-1, -1, -1) | Orange (010b)    |
+|   123-125    | Left,Bottom,Front  |  Down  | (-1, -1, -1) | Green (100b)     |
+|   126-128    | Left,Bottom,Front  | Front  | (-1, -1, -1) | White (000b)     |
+|   129-131    | Middle,Bottom,Front|  Down  | ( 0, -1, -1) | Green (100b)     |
+|   132-134    | Middle,Bottom,Front| Front  | ( 0, -1, -1) | White (000b)     |
+|   135-137    | Right,Bottom,Front | Right  | ( 1, -1, -1) | Red (011b)       |
+|   138-140    | Right,Bottom,Front |  Down  | ( 1, -1, -1) | Green (100b)     |
+|   141-143    | Right,Bottom,Front | Front  | ( 1, -1, -1) | White (000b)     |
+
+The initial bitstring for the bottom layer is:
+```010100001100001011100001010100011100010100000100000011100000```
+
+
+The resulting initial bitstring for the entire Rubik's Cube is:
+
+```010101001101001011101001010101011101010101000101000011101000010001011001010000011000010100001100001011100001010100011100010100000100000011100000```
+
+144 bits can fit in 18 bytes.
+
+|Bitstring       | Hexadecimal | Decimal |
+|----------------|-------------|---------|
+|```01010100``` | 54 | 84      |
+|```11010010``` | D2 | 210     |
+|```11101001``` | E9 | 233     |
+|```01010101``` | 55 | 85      |
+|```11010101``` | D5 | 213     |
+|```01000101``` | 45 | 69      |
+|```00001110``` | 0E | 14      |
+|```10000100``` | 84 | 132     |
+|```01011001``` | 59 | 89      |
+|```01000001``` | 41 | 65      |
+|```10000101``` | 85 | 133     |
+|```00001100``` | 0C | 12      |
+|```00101110``` | D6 | 214     |
+|```00010101``` | 15 | 21      |
+|```00011100``` | 1C | 28      |
+|```01010000``` | 50 | 80      |
+|```01000000``` | 40 | 64      |
+|```11100000``` | E0 | 224     |
+
+
+Hexadecimal representation of the initial Rubik's Cube bitstring is:
+```54 D2 E9 55 D5 45 0E 84 59 41 85 0C D6 15 1C 50 40 E0```
+
+
+
+
+
+
+
+   
+
+
+
+
+
+
+
+ 
+

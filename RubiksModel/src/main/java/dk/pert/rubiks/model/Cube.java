@@ -1,5 +1,7 @@
 package dk.pert.rubiks.model;
 
+import javax.swing.tree.FixedHeightLayoutCache;
+
 import dk.pert.rubiks.model.enums.Color;
 import dk.pert.rubiks.model.enums.Direction;
 import dk.pert.rubiks.model.interfaces.IPiece;
@@ -32,7 +34,7 @@ public class Cube {
     }
 
     private void createCenterPieces() {
-        /* Notice all center pieces have exactly two CENTER coordinates */
+        /* Notice all centerpieces have exactly two CENTER coordinates */
         pieces[CENTER][CENTER][FRONT] = new CenterPiece(new Surface(Color.GREEN, Direction.FRONT));
         pieces[LEFT][CENTER][CENTER] = new CenterPiece(new Surface(Color.ORANGE, Direction.LEFT));
         pieces[CENTER][CENTER][BACK] = new CenterPiece(new Surface(Color.BLUE, Direction.BACK));
@@ -151,5 +153,109 @@ public class Cube {
                 lPiece.moveLeft();
             }
         }
+    }
+
+    private static String encodeColor(Color color) {
+        return switch (color) {
+            case WHITE -> "000";
+            case YELLOW -> "001";
+            case ORANGE -> "010";
+            case RED -> "011";
+            case GREEN -> "100";
+            case BLUE -> "101";
+        };
+    }
+    private static Color decodeColor(String color) {
+        return switch (color) {
+            case "000" -> Color.WHITE;
+            case "001" -> Color.YELLOW;
+            case "010" -> Color.ORANGE;
+            case "011" -> Color.RED;
+            case "100" -> Color.GREEN;
+            case "101" -> Color.BLUE;
+            default -> throw new IllegalArgumentException("Unknown color representation: " + color);
+        };
+    }
+
+    private String encodeTopLayer() {
+        return encodeColor(pieces[LEFT][TOP][BACK].getSurface(Direction.LEFT).getColor()) +
+            encodeColor(pieces[LEFT][TOP][BACK].getSurface(Direction.UP).getColor()) +
+            encodeColor(pieces[LEFT][TOP][BACK].getSurface(Direction.BACK).getColor()) +
+            encodeColor(pieces[CENTER][TOP][BACK].getSurface(Direction.UP).getColor()) +
+            encodeColor(pieces[CENTER][TOP][BACK].getSurface(Direction.BACK).getColor()) +
+            encodeColor(pieces[RIGHT][TOP][BACK].getSurface(Direction.RIGHT).getColor()) +
+            encodeColor(pieces[RIGHT][TOP][BACK].getSurface(Direction.UP).getColor()) +
+            encodeColor(pieces[RIGHT][TOP][BACK].getSurface(Direction.BACK).getColor()) +
+            encodeColor(pieces[LEFT][TOP][CENTER].getSurface(Direction.LEFT).getColor()) +
+            encodeColor(pieces[LEFT][TOP][CENTER].getSurface(Direction.UP).getColor()) +
+            encodeColor(pieces[RIGHT][TOP][CENTER].getSurface(Direction.RIGHT).getColor()) +
+            encodeColor(pieces[RIGHT][TOP][CENTER].getSurface(Direction.UP).getColor()) +
+            encodeColor(pieces[LEFT][TOP][FRONT].getSurface(Direction.LEFT).getColor()) +
+            encodeColor(pieces[LEFT][TOP][FRONT].getSurface(Direction.UP).getColor()) +
+            encodeColor(pieces[LEFT][TOP][FRONT].getSurface(Direction.FRONT).getColor()) +
+            encodeColor(pieces[CENTER][TOP][FRONT].getSurface(Direction.FRONT).getColor()) +
+            encodeColor(pieces[CENTER][TOP][FRONT].getSurface(Direction.UP).getColor()) +
+            encodeColor(pieces[RIGHT][TOP][FRONT].getSurface(Direction.RIGHT).getColor()) +
+            encodeColor(pieces[RIGHT][TOP][FRONT].getSurface(Direction.UP).getColor()) +
+            encodeColor(pieces[RIGHT][TOP][FRONT].getSurface(Direction.FRONT).getColor());
+    }
+
+    private String encodeCenterLayer() {
+        return encodeColor(pieces[LEFT][CENTER][BACK].getSurface(Direction.LEFT).getColor()) +
+            encodeColor(pieces[LEFT][CENTER][BACK].getSurface(Direction.BACK).getColor()) +
+            encodeColor(pieces[RIGHT][CENTER][BACK].getSurface(Direction.RIGHT).getColor()) +
+            encodeColor(pieces[RIGHT][CENTER][BACK].getSurface(Direction.BACK).getColor()) +
+            encodeColor(pieces[LEFT][CENTER][FRONT].getSurface(Direction.LEFT).getColor()) +
+            encodeColor(pieces[LEFT][CENTER][FRONT].getSurface(Direction.FRONT).getColor()) +
+            encodeColor(pieces[RIGHT][CENTER][FRONT].getSurface(Direction.RIGHT).getColor()) +
+            encodeColor(pieces[RIGHT][CENTER][FRONT].getSurface(Direction.FRONT).getColor());
+    }
+
+    private String encodeBottomLayer() {
+        return encodeColor(pieces[LEFT][BOTTOM][BACK].getSurface(Direction.LEFT).getColor()) +
+            encodeColor(pieces[LEFT][BOTTOM][BACK].getSurface(Direction.DOWN).getColor()) +
+            encodeColor(pieces[LEFT][BOTTOM][BACK].getSurface(Direction.BACK).getColor()) +
+            encodeColor(pieces[CENTER][BOTTOM][BACK].getSurface(Direction.DOWN).getColor()) +
+            encodeColor(pieces[CENTER][BOTTOM][BACK].getSurface(Direction.BACK).getColor()) +
+            encodeColor(pieces[RIGHT][BOTTOM][BACK].getSurface(Direction.RIGHT).getColor()) +
+            encodeColor(pieces[RIGHT][BOTTOM][BACK].getSurface(Direction.DOWN).getColor()) +
+            encodeColor(pieces[RIGHT][BOTTOM][BACK].getSurface(Direction.BACK).getColor()) +
+            encodeColor(pieces[LEFT][BOTTOM][CENTER].getSurface(Direction.LEFT).getColor()) +
+            encodeColor(pieces[LEFT][BOTTOM][CENTER].getSurface(Direction.DOWN).getColor()) +
+            encodeColor(pieces[RIGHT][BOTTOM][CENTER].getSurface(Direction.RIGHT).getColor()) +
+            encodeColor(pieces[RIGHT][BOTTOM][CENTER].getSurface(Direction.DOWN).getColor()) +
+            encodeColor(pieces[LEFT][BOTTOM][FRONT].getSurface(Direction.LEFT).getColor()) +
+            encodeColor(pieces[LEFT][BOTTOM][FRONT].getSurface(Direction.DOWN).getColor()) +
+            encodeColor(pieces[LEFT][BOTTOM][FRONT].getSurface(Direction.FRONT).getColor()) +
+            encodeColor(pieces[CENTER][BOTTOM][FRONT].getSurface(Direction.FRONT).getColor()) +
+            encodeColor(pieces[CENTER][BOTTOM][FRONT].getSurface(Direction.DOWN).getColor()) +
+            encodeColor(pieces[RIGHT][BOTTOM][FRONT].getSurface(Direction.RIGHT).getColor()) +
+            encodeColor(pieces[RIGHT][BOTTOM][FRONT].getSurface(Direction.DOWN).getColor()) +
+            encodeColor(pieces[RIGHT][BOTTOM][FRONT].getSurface(Direction.FRONT).getColor());
+    }
+
+    private String encodeCube() {
+        return encodeTopLayer() + encodeCenterLayer() + encodeBottomLayer();
+    }
+
+    private byte[] toByteArray(String dataStr) {
+        int numOfBytes = dataStr.length() / 8;
+        byte[] bytes = new byte[numOfBytes];
+        for (int byteNo = 0; byteNo < numOfBytes; byteNo++) {
+            String byteStr = dataStr.substring(byteNo * 8, (byteNo  * 8) + 7);
+            bytes[byteNo] = (byte) Integer.parseUnsignedInt(byteStr, 2);
+        }
+        return bytes;
+    }
+    private String toString(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte aByte : bytes) {
+            String byteStr = Integer.toUnsignedString(aByte, 2);
+            while (byteStr.length() < 8) {
+                byteStr = "0" + byteStr; // Pad with leading zeros
+            }
+            sb.append(byteStr);
+        }
+        return sb.toString();
     }
 }
